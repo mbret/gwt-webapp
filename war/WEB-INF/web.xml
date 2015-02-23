@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+        PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+        "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+
+    <!-- Default page to serve -->
+    <welcome-file-list>
+        <welcome-file>stockwatcher.html</welcome-file>
+    </welcome-file-list>
+    
+    <servlet>
+        <servlet-name>ActionService</servlet-name>
+        <servlet-class>com.google.gwt.sample.stockwatcher.server.service.impl.ActionGWTServiceImpl</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>ActionService</servlet-name>
+        <url-pattern>/stockwatcher/ActionService</url-pattern>
+    </servlet-mapping>
+    
+    <!--<servlet>-->
+        <!--<servlet-name>BuyedActionService</servlet-name>-->
+        <!--<servlet-class>com.google.gwt.sample.stockwatcher.server.service.impl.BuyedActionGWTServiceImpl</servlet-class>-->
+    <!--</servlet>-->
+    <!--<servlet-mapping>-->
+        <!--<servlet-name>BuyedActionService</servlet-name>-->
+        <!--<url-pattern>/stockwatcher/BuyedActionService</url-pattern>-->
+    <!--</servlet-mapping>-->
+    
+    <servlet>
+        <servlet-name>WalletService</servlet-name>
+        <servlet-class>com.google.gwt.sample.stockwatcher.server.service.impl.WalletGWTServiceImpl</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>WalletService</servlet-name>
+        <url-pattern>/stockwatcher/WalletService</url-pattern>
+    </servlet-mapping>
+    
+    <servlet>
+        <servlet-name>GainService</servlet-name>
+        <servlet-class>com.google.gwt.sample.stockwatcher.server.service.impl.GainGWTServiceImpl</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>GainService</servlet-name>
+        <url-pattern>/stockwatcher/GainService</url-pattern>
+    </servlet-mapping>
+
+</web-app>

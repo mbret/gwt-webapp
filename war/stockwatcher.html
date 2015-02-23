@@ -1,0 +1,76 @@
+<html>
+<head>
+
+    <!--                                           -->
+    <!-- Any title is fine                         -->
+    <!--                                           -->
+    <title>GWT application</title>
+
+    
+
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap.min.css">
+
+    <!-- Optional theme -->
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.2/css/bootstrap-theme.min.css">
+
+    <link type="text/css" rel="stylesheet" href="assets/css/stockwatcher.css">
+
+    <script src="//code.jquery.com/jquery-1.11.2.min.js"></script>
+    <script src="//code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+    
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.2/js/bootstrap.min.js"></script>
+    
+    <!--                                            -->
+    <!-- This script is required bootstrap stuff.   -->
+    <!--                                            -->
+    <script type="text/javascript" language="javascript" src="stockwatcher/stockwatcher.nocache.js"></script>
+</head>
+
+<!--                                           -->
+<!-- The body can have arbitrary html, or      -->
+<!-- you can leave the body empty if you want  -->
+<!-- to create a completely dynamic ui         -->
+<!--                                           -->
+<body>
+
+<div class="container">
+
+    <div class="row">
+
+        <div class="col-md-5">
+            <h1>Portefeuille</h1>
+            <div id="stockList"></div>
+        </div>
+        
+        <div class="col-md-5">
+            <h1>Action</h1>
+            <div id="actionInfos"></div>
+        </div>
+
+    </div>
+
+    <div class="row">
+
+        <div class="col-md-5">
+            <h1>Gain</h1>
+            <div id="gain"></div>
+        </div>
+
+        <div class="col-md-5">
+            <h1>Stock Detail</h1>
+            <div id="detailsStock"></div>
+        </div>
+
+    </div>
+
+</div>
+
+
+
+<!-- OPTIONAL: include this if you want history support -->
+<iframe src="javascript:''" id="__gwt_historyFrame" tabIndex='-1' style="position:absolute;width:0;height:0;border:0"></iframe>
+
+</body>
+</html>
