@@ -8,7 +8,7 @@ import com.google.gwt.sample.stockwatcher.shared.services.action.ActionGWTServic
 import com.google.gwt.sample.stockwatcher.shared.services.gain.GainGWTService;
 import com.google.gwt.sample.stockwatcher.shared.services.gain.GainGWTServiceAsync;
 import com.google.gwt.sample.stockwatcher.shared.models.ActionGWT;
-import com.google.gwt.sample.stockwatcher.shared.models.BuyedActionGWT;
+import com.google.gwt.sample.stockwatcher.shared.models.BoughtActionGWT;
 import com.google.gwt.sample.stockwatcher.shared.models.WalletGWT;
 import com.google.gwt.sample.stockwatcher.shared.services.wallet.WalletGWTService;
 import com.google.gwt.sample.stockwatcher.shared.services.wallet.WalletGWTServiceAsync;
@@ -24,7 +24,7 @@ import java.util.List;
 public class stockwatcher implements EntryPoint {
 
     public GUI gui;
-    public static final int REFRESH_INTERVAL = 15000; // ms
+    public static final int REFRESH_INTERVAL = 20000; // ms
 
     public ActionGWTServiceAsync actionSvc = GWT.create(ActionGWTService.class);
     public GainGWTServiceAsync gainSvc = GWT.create(GainGWTService.class);
@@ -35,16 +35,19 @@ public class stockwatcher implements EntryPoint {
 
     final stockwatcher that = this;
 
+    public Boolean isActionRefreshing = false;
+
     /**
      * Entry point.
      * - Load stock panel
      * - Load wallet panel 
      */
     public void onModuleLoad() {
-        this.gui = new GUI(this);
+        this.gui = new GUI();
         this.gui.initGUI();
         this.loadStocks();
         this.loadWallet();
+        this.loadDetail();
     }
 
     public void loadStocks(){
@@ -119,8 +122,8 @@ public class stockwatcher implements EntryPoint {
         if (this.walletSvc == null){
             this.walletSvc = GWT.create(WalletGWTService.class);
         }
-        this.walletSvc.getAllBuyedActions(new AsyncCallback<WalletGWT>() {
-            
+        this.walletSvc.fetchBoughtActions(new AsyncCallback<WalletGWT>() {
+
             @Override
             public void onFailure(Throwable caught) {
                 that.gui.displayError(caught);
@@ -129,16 +132,20 @@ public class stockwatcher implements EntryPoint {
             @Override
             public void onSuccess(WalletGWT result) {
                 if(result == null){
-                    
+
                 }
                 else{
-                    for(BuyedActionGWT ba : result.getBuyedActions()){
+                    for(BoughtActionGWT ba : result.getBoughtActions()){
                         that.addWalletAction(ba);
                     }
                     that.gui.displayMessage(GUI.MESSAGE_WALLET_FETCHING);
                 }
             }
         });
+    }
+
+    public void loadDetail(){
+        this.gui.loadDetailStock();
     }
 
     /**
@@ -176,6 +183,7 @@ public class stockwatcher implements EntryPoint {
             }
             @Override
             public void onSuccess(ActionGWT result) {
+                that.gui.displayMessage("Action found " + result.getSymbol());
                 cb.onSuccess(result);
             }
         });
@@ -184,10 +192,11 @@ public class stockwatcher implements EntryPoint {
     /**
      * add stock to wallet
      */
-    public void addWalletAction(BuyedActionGWT result) {
-        final BuyedActionGWT buyed = result;
+    public void addWalletAction(final BoughtActionGWT result) {
         final String symbol = Filter.symbol(result.getSymbol());
         this.stocks.add(symbol);
+
+        final TextBox number = new TextBox();
 
         // Add a button to remove this stock from the table.
         Button sellButton = new Button("Sell");
@@ -195,10 +204,76 @@ public class stockwatcher implements EntryPoint {
 
             @Override
             public void onClick(ClickEvent event) {
-                int removedIndex = stocks.indexOf(symbol);
-                that.stocks.remove(removedIndex);
-                that.gui.removeWalletAction(removedIndex + 1);
-                that.gui.displayMessage(GUI.MESSAGE_ACTION_SOLD);
+
+                // @todo input dialog here
+
+                final Integer number = 1;
+                // Sell all
+                if(result.getNbr() - 1 < 1){
+                    that.walletSvc.sellAction(result.getId(), new AsyncCallback<Void>() {
+
+                        @Override
+                        public void onFailure(Throwable caught) {
+                            gui.displayError(caught);
+                        }
+
+                        @Override
+                        public void onSuccess(Void result) {
+                            int index = stocks.indexOf(symbol);
+                            that.stocks.remove(index);
+                            that.gui.removeWalletAction(index + 1);
+                            that.gui.displayMessage(GUI.MESSAGE_ACTION_SOLD);
+                        }
+                    });
+                }
+                // Sell some part
+                else if( result.getNbr() - 1 >= 1 ){
+                    that.walletSvc.sellAction(result.getId(), number, new AsyncCallback<Integer>() {
+
+                        @Override
+                        public void onFailure(Throwable caught) {
+                            gui.displayError(caught);
+                        }
+
+                        @Override
+                        public void onSuccess(Integer number) {
+                            result.setNbr(number);
+                            int index = stocks.indexOf(symbol);
+                            that.gui.updateWalletAction(index + 1, result.getNbr());
+                            that.gui.displayMessage(GUI.MESSAGE_ACTION_SOLD);
+                        }
+                    });
+                }
+                else{
+                    that.gui.alert(GUI.MESSAGE_INVALID_NUMBER);
+                }
+
+            }
+        });
+
+        Button sellAllButton = new Button("Sell All");
+        sellAllButton.addClickHandler(new ClickHandler() {
+
+            @Override
+            public void onClick(ClickEvent event) {
+
+                // @todo input dialog here
+                that.walletSvc.sellAction(result.getId(), new AsyncCallback<Void>() {
+
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        gui.displayError(caught);
+                    }
+
+                    @Override
+                    public void onSuccess(Void result) {
+                        int index = stocks.indexOf(symbol);
+                        that.stocks.remove(index);
+                        that.gui.removeWalletAction(index + 1);
+                        that.gui.displayMessage(GUI.MESSAGE_ACTION_SOLD);
+                    }
+                });
+
             }
         });
 
@@ -207,12 +282,12 @@ public class stockwatcher implements EntryPoint {
             
             @Override
             public void onClick(ClickEvent event) {
-                updateDetails(buyed);
+                updateDetails(result);
             }
         });
         
         // Refresh UI
-        this.gui.addActionToWallet(symbol, result.getPrix(), result.getNbr(), sellButton, detailsButton);
+        this.gui.addActionToWallet(symbol, result.getPrix(), result.getNbr(), sellButton, detailsButton, sellAllButton);
     }
 
     /**
@@ -241,7 +316,7 @@ public class stockwatcher implements EntryPoint {
                         walletSvc = GWT.create(WalletGWTService.class);
                     }
 
-                    walletSvc.buyAction(result, Integer.valueOf(number.getText()), new AsyncCallback<BuyedActionGWT>() {
+                    walletSvc.buyAction(result, Integer.valueOf(number.getText()), new AsyncCallback<BoughtActionGWT>() {
                         
                         @Override
                         public void onFailure(Throwable caught) {
@@ -249,7 +324,7 @@ public class stockwatcher implements EntryPoint {
                         }
 
                         @Override
-                        public void onSuccess(BuyedActionGWT result) {
+                        public void onSuccess(BoughtActionGWT result) {
                             // Add new action to wallet
                             that.addWalletAction(result);
                             
@@ -277,31 +352,41 @@ public class stockwatcher implements EntryPoint {
             return;  
         }
 
-        this.gui.removeStockRows();
-        this.gui.initHeaderActionsList();
-        
-        List<String> toRefresh = (ArrayList<String>)toPurchase.clone();
-        toPurchase = new ArrayList();
-        for(String s : toRefresh)
-            searchSymbol(s, new AsyncCallback<ActionGWT>() {
-                @Override
-                public void onFailure(Throwable caught) {
-                    // ...
-                }
+        if(this.isActionRefreshing){
+            return;
+        }
+        else{
+            this.isActionRefreshing = true;
+            this.gui.removeStockRows();
+            this.gui.initHeaderActionsList();
+            final Boolean isActionRefreshingRef = this.isActionRefreshing;
 
-                @Override
-                public void onSuccess(ActionGWT result){
-                    if( result != null ){
-                        that.addSymbolStockList(result);
+            List<String> toRefresh = (ArrayList<String>)toPurchase.clone();
+            toPurchase = new ArrayList();
+            for(String s : toRefresh)
+                searchSymbol(s, new AsyncCallback<ActionGWT>() {
+                    @Override
+                    public void onFailure(Throwable caught) {
+                        // ...
                     }
-                }
-            });
+
+                    @Override
+                    public void onSuccess(ActionGWT result){
+                        that.isActionRefreshing = false;
+                        if( result != null ){
+                            that.addSymbolStockList(result);
+                        }
+                        else{
+                            that.gui.displayMessage(GUI.MESSAGE_ACTION_NOT_FOUND);
+                        }
+                    }
+                });
+        }
+
     }
 
-    private void updateDetails(BuyedActionGWT result){
-        final BuyedActionGWT buyed = result;
-
-        this.gui.refreshActionDetail(result.getSymbol(), ((Double)result.getPrix()).toString(), result.getNbr()+1);
+    private void updateDetails(final BoughtActionGWT result){
+        final BoughtActionGWT buyed = result;
 
         if(actionSvc == null)
             actionSvc = GWT.create(ActionGWTService.class);
@@ -312,21 +397,14 @@ public class stockwatcher implements EntryPoint {
             }
 
             public void onSuccess(ActionGWT action) {
-                actualPriceDetail.setText("Actual price: "+action.getPrice()+"");
+                if(action == null){
+                    that.gui.displayError("Sorry but we were unable to retrieve detail");
+                }
+                else{
+                    that.gui.refreshActionDetail(result.getSymbol(), ((Double)result.getPrix()).toString(), result.getNbr()+1, action, result);
+                    that.gui.displayMessage(GUI.MESSAGE_DETAIL_UPDATED);
+                }
 
-                double total = action.getPrice() * buyed.getNbr();
-                BigDecimal bd = new BigDecimal(total);
-                bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
-                totalDetail.setText("Total: "+bd.doubleValue()+"");
-
-                double diff = action.getPrice() - buyed.getPrix();
-                if(diff >= 0)
-                    diffDetail.getElement().getStyle().setColor("darkgreen");
-                else
-                    diffDetail.getElement().getStyle().setColor("red");
-                bd = new BigDecimal(diff);
-                bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
-                diffDetail.setText("Difference: "+bd.doubleValue()+"");
             }
         });
     }

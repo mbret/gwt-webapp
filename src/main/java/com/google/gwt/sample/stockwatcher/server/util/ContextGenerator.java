@@ -23,7 +23,7 @@ public class ContextGenerator {
     }
     
     public static String getPath(String ob1, Class obj){
-        String path = "java:global/gwt_webapp_ejb_exploded/"+ob1+"!com.google.gwt.sample.stockwatcher.ejb.remote." + obj.getSimpleName();
+        String path = "java:global/gwt_webapp_ejb_exploded/" + ob1 + "!com.google.gwt.sample.stockwatcher.shared.remote." + obj.getSimpleName();
         System.out.println(path);
         return path;
         

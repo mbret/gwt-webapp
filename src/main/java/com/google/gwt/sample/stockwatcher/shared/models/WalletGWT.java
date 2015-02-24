@@ -8,19 +8,19 @@ import java.util.List;
  */
 public class WalletGWT implements Serializable {
     
-    private List<BuyedActionGWT> buyedActions;
+    private List<BoughtActionGWT> boughtActions;
 
     public WalletGWT(){}
 
-    public WalletGWT(List<BuyedActionGWT> buyedActions) {
-        this.buyedActions = buyedActions;
+    public WalletGWT(List<BoughtActionGWT> boughtActions) {
+        this.boughtActions = boughtActions;
     }
 
-    public List<BuyedActionGWT> getBuyedActions() {
-        return buyedActions;
+    public List<BoughtActionGWT> getBoughtActions() {
+        return boughtActions;
     }
 
-    public void setBuyedActions(List<BuyedActionGWT> buyedActions) {
-        this.buyedActions = buyedActions;
+    public void setBoughtActions(List<BoughtActionGWT> boughtActions) {
+        this.boughtActions = boughtActions;
     }
 }

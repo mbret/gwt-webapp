@@ -3,12 +3,12 @@ package com.google.gwt.sample.stockwatcher.ejb.entity;
 import javax.persistence.*;
 
 /**
- * Created by Brian on 27/01/2015.
+ * Created by Maxime on 27/01/2015.
  */
 
-@Entity(name = "buyedaction")
-@Table(name = "buyedaction")
-public class BuyedActionEntity {
+@Entity(name = "boughtaction")
+@Table(name = "bought_action")
+public class BoughtActionEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -17,15 +17,15 @@ public class BuyedActionEntity {
     @Column(name="symbol", unique = true, nullable = false)
     private String symbol;
 
-    @Column(name="prix", unique = true, nullable = false)
+    @Column(name="price", unique = true, nullable = false)
     private double prix;
 
-    @Column(name="nbr", unique = true, nullable = false)
+    @Column(name="number", unique = true, nullable = false)
     private int nbr;
 
-    public BuyedActionEntity(){}
+    public BoughtActionEntity(){}
 
-    public BuyedActionEntity(String s, double p, int n){
+    public BoughtActionEntity(String s, double p, int n){
         symbol = s;
         prix = p;
         nbr = n;

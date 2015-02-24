@@ -19,15 +19,6 @@
         <url-pattern>/stockwatcher/ActionService</url-pattern>
     </servlet-mapping>
     
-    <!--<servlet>-->
-        <!--<servlet-name>BuyedActionService</servlet-name>-->
-        <!--<servlet-class>com.google.gwt.sample.stockwatcher.server.service.impl.BuyedActionGWTServiceImpl</servlet-class>-->
-    <!--</servlet>-->
-    <!--<servlet-mapping>-->
-        <!--<servlet-name>BuyedActionService</servlet-name>-->
-        <!--<url-pattern>/stockwatcher/BuyedActionService</url-pattern>-->
-    <!--</servlet-mapping>-->
-    
     <servlet>
         <servlet-name>WalletService</servlet-name>
         <servlet-class>com.google.gwt.sample.stockwatcher.server.service.impl.WalletGWTServiceImpl</servlet-class>

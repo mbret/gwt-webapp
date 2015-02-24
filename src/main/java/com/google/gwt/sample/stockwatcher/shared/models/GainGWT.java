@@ -3,7 +3,7 @@ package com.google.gwt.sample.stockwatcher.shared.models;
 import java.io.Serializable;
 
 /**
- * Created by Brian on 13/01/2015.
+ * Created by Maxime on 13/01/2015.
  */
 
 public class GainGWT implements Serializable {

@@ -5,7 +5,7 @@ import com.google.gwt.sample.stockwatcher.shared.models.GainGWT;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 
 /**
- * Created by Brian on 13/01/2015.
+ * Created by Maxime on 13/01/2015.
  */
 public class GainGWTServiceImpl extends RemoteServiceServlet implements GainGWTService {
     

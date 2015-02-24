@@ -1,7 +1,7 @@
 package com.google.gwt.sample.stockwatcher.shared.services.wallet;
 
 import com.google.gwt.sample.stockwatcher.shared.models.ActionGWT;
-import com.google.gwt.sample.stockwatcher.shared.models.BuyedActionGWT;
+import com.google.gwt.sample.stockwatcher.shared.models.BoughtActionGWT;
 import com.google.gwt.sample.stockwatcher.shared.models.WalletGWT;
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
@@ -12,7 +12,11 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
 @RemoteServiceRelativePath("WalletService")
 public interface WalletGWTService extends RemoteService{
     
-    BuyedActionGWT buyAction(ActionGWT action, int qte);
+    BoughtActionGWT buyAction(ActionGWT action, int qte);
     
-    WalletGWT getAllBuyedActions();
+    WalletGWT fetchBoughtActions();
+
+    Integer sellAction(Integer id, int number);
+
+    void sellAction(Integer id);
 }

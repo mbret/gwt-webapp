@@ -5,7 +5,7 @@ import java.io.Serializable;
 /**
  *
  */
-public class BuyedActionGWT implements Serializable {
+public class BoughtActionGWT implements Serializable {
 
     private int id;
 
@@ -15,9 +15,16 @@ public class BuyedActionGWT implements Serializable {
 
     private int nbr;
 
-    public BuyedActionGWT(){}
+    public BoughtActionGWT(){}
 
-    public BuyedActionGWT(String s, double p, int n){
+    public BoughtActionGWT(int id, String symbol, double prix, int nbr) {
+        this.id = id;
+        this.symbol = symbol;
+        this.prix = prix;
+        this.nbr = nbr;
+    }
+
+    public BoughtActionGWT(String s, double p, int n){
         symbol = s;
         prix = p;
         nbr = n;

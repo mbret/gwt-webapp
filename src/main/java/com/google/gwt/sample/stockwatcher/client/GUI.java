@@ -1,7 +1,12 @@
 package com.google.gwt.sample.stockwatcher.client;
 
+import com.google.gwt.event.dom.client.*;
+import com.google.gwt.sample.stockwatcher.shared.models.ActionGWT;
+import com.google.gwt.sample.stockwatcher.shared.models.BoughtActionGWT;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.ui.*;
+
+import java.math.BigDecimal;
 
 /**
  * Created by Maxime on 2/23/2015.
@@ -18,8 +23,8 @@ public class GUI {
     public static final String MESSAGE_WALLET_FETCHING = "Wallet is fetching...";
     public static final String MESSAGE_ACTION_FETCHING = "Action are refreshing...";
     public static final String MESSAGE_ACTION_SEARCHING = "Action is searching...";
-
-    private stockwatcher stockwatcher;
+    public static final String MESSAGE_DETAIL_UPDATED = "Detail updated...";
+    public static final String MESSAGE_ACTION_NOT_FOUND = "No action found!";
 
     public Label errorMsgLabel = new Label();
     Timer errorMessageTimer = new Timer() {
@@ -37,21 +42,24 @@ public class GUI {
         }
     };
 
-    //buyedaction: porte feuille d'actions achetées
+    // bought action
+    // Panel
     private VerticalPanel verticalStockPanel = new VerticalPanel();
-    private FlexTable buyedActionsFlexTable = new FlexTable();
+    private FlexTable boughtActionsFlexTable = new FlexTable();
     private HorizontalPanel addPanel = new HorizontalPanel();
     public TextBox newSymbolTextBox = new TextBox();
     private Label lastUpdatedLabel = new Label();
 
-    //action: action recherchees, et que l'on peut acheter
+    // Actions stock list
+    // Panel
     private FlexTable actionsFlexTable = new FlexTable();
     private VerticalPanel verticalPurchasePanel = new VerticalPanel();
     public Button searchActionButton = new Button("Search");
     public TextBox searchedSymbolTextBox = new TextBox();
     private HorizontalPanel searchPanel = new HorizontalPanel();
 
-    //details: detail de l'action achetée
+    // Detail graphical part
+    // Panel
     private VerticalPanel verticalDetailsPanel = new VerticalPanel();
     private Label symbolDetail = new Label();
     private Label priceDetail = new Label();
@@ -59,10 +67,6 @@ public class GUI {
     private Label actualPriceDetail = new Label();
     private Label totalDetail = new Label();
     private Label diffDetail = new Label();
-    
-    public GUI(stockwatcher stockwatcher) {
-        this.stockwatcher = stockwatcher;
-    }
 
     public void initGUI(){
         this.errorMsgLabel.setStyleName("errorMessage");
@@ -121,29 +125,28 @@ public class GUI {
      */
     public void loadWallet(){
         // Create table for stock data.
-        this.buyedActionsFlexTable.setText(0, 0, "Name");
-        this.buyedActionsFlexTable.setText(0, 1, "Price");
-        this.buyedActionsFlexTable.setText(0, 2, "Number");
-        this.buyedActionsFlexTable.setText(0, 3, "Sell");
+        this.boughtActionsFlexTable.setText(0, 0, "Name");
+        this.boughtActionsFlexTable.setText(0, 1, "Price");
+        this.boughtActionsFlexTable.setText(0, 2, "Number");
+        this.boughtActionsFlexTable.setText(0, 3, "Sell");
+        this.boughtActionsFlexTable.setText(0, 4, "Detail");
+        this.boughtActionsFlexTable.setText(0, 5, "Sell all");
 
         // Add styles to elements in the stock list table.
-        this.buyedActionsFlexTable.setCellPadding(6);
-        this.buyedActionsFlexTable.getRowFormatter().addStyleName(0, "watchListHeader");
-        this.buyedActionsFlexTable.addStyleName("watchList");
-        this.buyedActionsFlexTable.addStyleName("table");
-        this.buyedActionsFlexTable.getCellFormatter().addStyleName(0, 1, "watchListNumericColumn");
-        this.buyedActionsFlexTable.getCellFormatter().addStyleName(0, 2, "watchListNumericColumn");
-        this.buyedActionsFlexTable.getCellFormatter().addStyleName(0, 3, "watchListRemoveColumn");
+        this.boughtActionsFlexTable.setCellPadding(6);
+        this.boughtActionsFlexTable.getRowFormatter().addStyleName(0, "watchListHeader");
+        this.boughtActionsFlexTable.addStyleName("watchList");
+        this.boughtActionsFlexTable.addStyleName("table");
+        this.boughtActionsFlexTable.getCellFormatter().addStyleName(0, 1, "watchListNumericColumn");
+        this.boughtActionsFlexTable.getCellFormatter().addStyleName(0, 2, "watchListNumericColumn");
+        this.boughtActionsFlexTable.getCellFormatter().addStyleName(0, 3, "watchListRemoveColumn");
 
         // Assemble Add Stock panel.
         this.addPanel.add(this.newSymbolTextBox);
         this.addPanel.addStyleName("addPanel");
 
         // Assemble Main panel.
-
-
-//        this.verticalStockPanel.add(this.errorMsgLabel);
-        this.verticalStockPanel.add(this.buyedActionsFlexTable);
+        this.verticalStockPanel.add(this.boughtActionsFlexTable);
         this.verticalStockPanel.add(this.lastUpdatedLabel);
 
         // Associate the Main panel with the HTML host page.
@@ -151,10 +154,19 @@ public class GUI {
 
         // Move cursor focus to the input box.
         this.newSymbolTextBox.setFocus(true);
-
-
     }
-    
+
+    public void loadDetailStock(){
+        RootPanel.get("detailsStock").addStyleName("jumbotron");
+        this.verticalDetailsPanel.add(symbolDetail);
+        this.verticalDetailsPanel.add(priceDetail);
+        this.verticalDetailsPanel.add(actualPriceDetail);
+        this.verticalDetailsPanel.add(diffDetail);
+        this.verticalDetailsPanel.add(nbDetail);
+        this.verticalDetailsPanel.add(totalDetail);
+        RootPanel.get("detailsStock").add(verticalDetailsPanel);
+    }
+
     public void addStockRow(String symbol, TextBox number, Double price, Button purchaseButton){
         this.newSymbolTextBox.setFocus(true);
         int row = this.actionsFlexTable.getRowCount();
@@ -169,23 +181,27 @@ public class GUI {
         this.actionsFlexTable.setWidget(row, 3, purchaseButton);
     }
     
-    public void addActionToWallet(String symbol, Double price, Integer number, Button sellButton, Button detailsButton){
+    public void addActionToWallet(String symbol, Double price, Integer number, Button sellButton, Button detailsButton, Button sellAllButton){
         this.newSymbolTextBox.setFocus(true);
         this.newSymbolTextBox.setText("");
-        int row = this.buyedActionsFlexTable.getRowCount();
-        this.buyedActionsFlexTable.setText(row, 0, symbol);
-        this.buyedActionsFlexTable.setText(row, 1, price.toString());
-        this.buyedActionsFlexTable.setText(row, 2, number.toString());
-        this.buyedActionsFlexTable.getCellFormatter().addStyleName(row, 1, "watchListNumericColumn");
-        this.buyedActionsFlexTable.getCellFormatter().addStyleName(row, 2, "watchListNumericColumn");
-        this.buyedActionsFlexTable.getCellFormatter().addStyleName(row, 3, "watchListRemoveColumn");
-        this.buyedActionsFlexTable.setWidget(row, 3, sellButton);
-        this.buyedActionsFlexTable.setWidget(row, 4, detailsButton);
-        
+        int row = this.boughtActionsFlexTable.getRowCount();
+        this.boughtActionsFlexTable.setText(row, 0, symbol);
+        this.boughtActionsFlexTable.setText(row, 1, price.toString());
+        this.boughtActionsFlexTable.setText(row, 2, number.toString());
+        this.boughtActionsFlexTable.getCellFormatter().addStyleName(row, 1, "watchListNumericColumn");
+        this.boughtActionsFlexTable.getCellFormatter().addStyleName(row, 2, "watchListNumericColumn");
+        this.boughtActionsFlexTable.getCellFormatter().addStyleName(row, 3, "watchListRemoveColumn");
+        this.boughtActionsFlexTable.setWidget(row, 3, sellButton);
+        this.boughtActionsFlexTable.setWidget(row, 4, detailsButton);
+        this.boughtActionsFlexTable.setWidget(row, 5, sellAllButton);
+    }
+
+    public void updateWalletAction(int row, Integer number){
+        this.boughtActionsFlexTable.setText(row, 2, number.toString());
     }
 
     public void removeWalletAction( int row ){
-        this.buyedActionsFlexTable.removeRow(row);
+        this.boughtActionsFlexTable.removeRow(row);
     }
 
     public void removeStockRow( int row ){
@@ -200,10 +216,26 @@ public class GUI {
         this.searchedSymbolTextBox.setText("");
     }
     
-    public void refreshActionDetail(String symbol, String price, Integer number){
+    public void refreshActionDetail(String symbol, String price, Integer number, ActionGWT action, BoughtActionGWT result){
+
         symbolDetail.setText("Symbol: "+ symbol);
-        priceDetail.setText("Bought price: "+ price +"");
+        priceDetail.setText("Bought price: "+ price +" €");
         nbDetail.setText("Number: "+ number.toString() + "");
+        actualPriceDetail.setText("Current price: "+action.getPrice()+" €");
+
+        double total = action.getPrice() * result.getNbr();
+        BigDecimal bd = new BigDecimal(total);
+        bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
+        this.totalDetail.setText("Total: "+bd.doubleValue()+"");
+
+        double diff = action.getPrice() - result.getPrix();
+        if(diff >= 0)
+            this.diffDetail.getElement().getStyle().setColor("darkgreen");
+        else
+            this.diffDetail.getElement().getStyle().setColor("red");
+        bd = new BigDecimal(diff);
+        bd = bd.setScale(2, BigDecimal.ROUND_HALF_UP);
+        diffDetail.setText("Difference: "+bd.doubleValue()+"");
     }
     
     public void displayError(String message){
@@ -219,7 +251,7 @@ public class GUI {
     }
     
     public void displayMessage(String message){
-        this.infoMsgLabel.setText("Error: " + message);
+        this.infoMsgLabel.setText("Info: " + message);
         this.infoMsgLabel.setVisible(true);
         this.infoMessageTimer.schedule(INFO_INTERVAL);
     }
@@ -227,5 +259,57 @@ public class GUI {
     public void alert(String message){
         com.google.gwt.user.client.Window.alert(message);
         
+    }
+
+    public class PromptedTextBox extends TextBox implements KeyPressHandler, FocusHandler, ClickHandler
+    {
+        private String promptText;
+        private String promptStyle;
+
+        public PromptedTextBox(String promptText, String promptStyleName)
+        {
+            this.promptText = promptText;
+            this.promptStyle = promptStyleName;
+            this.addKeyPressHandler(this);
+            this.addFocusHandler(this);
+            this.addClickHandler(this);
+            showPrompt();
+        }
+
+        public void showPrompt()
+        {
+            this.addStyleName(promptStyle);
+            this.setText(this.promptText);
+        }
+
+        public void hidePrompt()
+        {
+            this.setText(null);
+            this.removeStyleName(promptStyle);
+        }
+
+        @Override
+        public void onKeyPress(KeyPressEvent event)
+        {
+            if (promptText.equals(this.getText())
+                    && !(event.getNativeEvent().getKeyCode() == KeyCodes.KEY_TAB))
+            {
+                hidePrompt();
+            }
+        }
+
+        @Override
+        public void onFocus(FocusEvent event)
+        {
+            this.setCursorPos(0);
+        }
+
+        @Override
+        public void onClick(ClickEvent event)
+        {
+            if (promptText.equals(this.getText()))
+                hidePrompt();
+        }
+
     }
 }

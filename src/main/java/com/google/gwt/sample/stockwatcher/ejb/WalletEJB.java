@@ -1,8 +1,8 @@
 package com.google.gwt.sample.stockwatcher.ejb;
 
-import com.google.gwt.sample.stockwatcher.ejb.entity.BuyedActionEntity;
+import com.google.gwt.sample.stockwatcher.ejb.entity.BoughtActionEntity;
 import com.google.gwt.sample.stockwatcher.shared.models.ActionGWT;
-import com.google.gwt.sample.stockwatcher.shared.models.BuyedActionGWT;
+import com.google.gwt.sample.stockwatcher.shared.models.BoughtActionGWT;
 import com.google.gwt.sample.stockwatcher.shared.models.WalletGWT;
 import com.google.gwt.sample.stockwatcher.shared.remote.WalletEJBRemote;
 
@@ -29,9 +29,9 @@ public class WalletEJB implements WalletEJBRemote {
         return emf;
     }
 
-    public BuyedActionGWT saveBuyedAction(ActionGWT action, int nbr){
-        BuyedActionGWT buyedaction = new BuyedActionGWT(action.getSymbol(), action.getPrice(), nbr);
-        BuyedActionEntity toPersist = new BuyedActionEntity(action.getSymbol(), action.getPrice(), nbr);
+    public BoughtActionGWT saveBoughtAction(ActionGWT action, int nbr){
+        BoughtActionGWT buyedaction = new BoughtActionGWT(action.getSymbol(), action.getPrice(), nbr);
+        BoughtActionEntity toPersist = new BoughtActionEntity(action.getSymbol(), action.getPrice(), nbr);
 
         emf = getEntityManagerFactory();
         EntityManager em = emf.createEntityManager();
@@ -43,28 +43,56 @@ public class WalletEJB implements WalletEJBRemote {
         em.getTransaction().commit();
         em.close();
 
+        buyedaction.setId( toPersist.getId() );
         return buyedaction;
     }
     
-    public WalletGWT getAllBuyedActions(){
+    public WalletGWT fetchBoughtActions(){
         emf = getEntityManagerFactory();
         EntityManager em = emf.createEntityManager();
-        TypedQuery<BuyedActionEntity> query = em.createQuery("SELECT ba FROM buyedaction ba", BuyedActionEntity.class);
+        TypedQuery<BoughtActionEntity> query = em.createQuery("SELECT ba FROM boughtaction ba", BoughtActionEntity.class);
 
-        List<BuyedActionGWT> toReturn = new ArrayList<>();
-        for(BuyedActionEntity baejb : query.getResultList())
-            toReturn.add(new BuyedActionGWT(baejb.getSymbol(), baejb.getPrix(), baejb.getNbr()));
+        List<BoughtActionGWT> toReturn = new ArrayList<>();
+        for(BoughtActionEntity baejb : query.getResultList())
+            toReturn.add(new BoughtActionGWT(baejb.getId(), baejb.getSymbol(), baejb.getPrix(), baejb.getNbr()));
 
         WalletGWT wallet = new WalletGWT();
-        wallet.setBuyedActions(toReturn);
+        wallet.setBoughtActions(toReturn);
         return wallet;
     }
 
+    /**
+     *
+     * @param id
+     * @param nbr
+     */
     @Override
-    public void sellAction(ActionGWT action, int nbr) {
+    public Integer sellAction(Integer id, int nbr) {
         emf = getEntityManagerFactory();
         EntityManager em = emf.createEntityManager();
-//        em.find(BuyedActionEntity.class, action.get);
+
+        // fetch action
+        BoughtActionEntity entity = em.find(BoughtActionEntity.class, id);
+
+        // update
+        em.getTransaction().begin();
+        entity.setNbr( entity.getNbr() - nbr );
+        em.getTransaction().commit();
+        return entity.getNbr();
+    }
+
+    @Override
+    public void sellAction(Integer id) {
+        emf = getEntityManagerFactory();
+        EntityManager em = emf.createEntityManager();
+
+        // fetch action
+        BoughtActionEntity entity = em.find(BoughtActionEntity.class, id);
+
+        // update
+        em.getTransaction().begin();
+        em.remove(entity);
+        em.getTransaction().commit();
     }
 
 
